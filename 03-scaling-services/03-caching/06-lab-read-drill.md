@@ -108,6 +108,23 @@ print(f"uniform hit rate: {stats['hits']/total:.1%}")
 
 ## Drill 2 — Cause a stampede
 
+```mermaid
+flowchart TD
+    subgraph N ["Naive cache-aside"]
+        E1["hot key expires"] --> M1["200 concurrent misses"]
+        M1 --> Q1["200 identical DB queries"]
+        Q1 --> X1["origin saturated"]
+    end
+    subgraph C ["With coalescing"]
+        E2["hot key expires"] --> M2["200 concurrent misses"]
+        M2 --> L["1 leader takes the lock"]
+        M2 --> W["199 wait for the leader"]
+        L --> Q2["1 DB query"]
+        Q2 --> W
+    end
+```
+
+
 ```python
 def concurrent_load(fn, key_id, n_threads=200):
     stats.clear()

@@ -24,6 +24,22 @@ That last one is the point of the whole lab. You will never forget `acks=1` afte
 
 ## Setup
 
+```mermaid
+flowchart TD
+    P[Producer] --> B1["kafka1 :9092<br/>broker + controller"]
+    P --> B2["kafka2 :9094"]
+    P --> B3["kafka3 :9096"]
+    B1 <-.KRaft quorum.-> B2
+    B2 <-.-> B3
+    B1 --> G1["consumer group: billing"]
+    B1 --> G2["consumer group: analytics"]
+    G1 --- N1["6 partitions split<br/>across group members"]
+    G2 --- N2["reads EVERY message,<br/>independently"]
+```
+
+Three brokers, so `replication.factor=3` with `min.insync.replicas=2` is real: kill one and writes continue, kill two and you watch writes correctly refuse.
+
+
 ```yaml
 # docker-compose.yml — 3-broker KRaft cluster, no ZooKeeper
 services:

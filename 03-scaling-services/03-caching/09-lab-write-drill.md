@@ -117,6 +117,23 @@ print(f"DB={db.data['p1']}  CACHE={r.get(KEY('p1'))}")
 
 ## Drill 2 — The stale-set-after-delete race (reader vs writer)
 
+```mermaid
+sequenceDiagram
+    participant R as Reader
+    participant C as Cache
+    participant W as Writer
+    participant D as Database
+    R->>C: GET key
+    C-->>R: MISS
+    R->>D: SELECT returns "old"
+    Note over R: slow — still holding "old"
+    W->>D: UPDATE to "new"
+    W->>C: DEL key (cache is already empty)
+    R->>C: SET key = "old"
+    Note over C: cache holds "old"<br/>DB holds "new"<br/>wrong for the whole TTL
+```
+
+
 The race that delete alone cannot fix.
 
 ```python

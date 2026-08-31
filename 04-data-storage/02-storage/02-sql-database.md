@@ -23,6 +23,21 @@ The catch: all that checking and cleverness happens on **one machine** for write
 
 ## What you're actually buying
 
+```mermaid
+flowchart TD
+    C[Client] --> P["Parser"] --> PL["Planner / optimiser<br/>uses table statistics"]
+    PL --> EX["Executor"]
+    EX --> BP[("Buffer pool<br/>hot pages in RAM")]
+    BP -->|miss| D[("Data files: B-tree pages")]
+    EX --> WAL[("WAL — fsync here<br/>is the durability point")]
+    WAL -.->|replay| D
+    WAL -.->|ship| REP[("Replicas")]
+    WAL -.->|logical decode| CDC["CDC consumers"]
+```
+
+🎯 **The WAL feeds three things:** crash recovery, replication, and CDC. *The log is the source of truth; the data files are a materialised view of it.*
+
+
 | Property | What it means in practice |
 |---|---|
 | **ACID transactions** | Multi-row changes are all-or-nothing, even across tables |

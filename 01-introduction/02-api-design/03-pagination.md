@@ -29,6 +29,19 @@ That's it. The lazy way is **offset pagination**. The smart way is **cursor pagi
 
 ## Offset pagination — why it breaks
 
+```mermaid
+flowchart LR
+    subgraph OFF ["OFFSET 1000000 LIMIT 20"]
+        A["Scan row 1"] --> B["... produce and DISCARD<br/>999,999 rows ..."] --> C["Return rows<br/>1,000,001-1,000,020"]
+    end
+    subgraph CUR ["Keyset: WHERE (created_at, id) < (T, 8842)"]
+        D["Seek the index<br/>directly to T"] --> E["Read 20 rows"]
+    end
+```
+
+**The work is the whole difference.** Offset *produces and throws away* everything before the page. Keyset *seeks* straight to the position — so page 1 and page 500,000 cost exactly the same.
+
+
 ```sql
 SELECT * FROM posts ORDER BY created_at DESC LIMIT 20 OFFSET 1000000;
 ```

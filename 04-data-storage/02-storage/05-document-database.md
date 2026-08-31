@@ -63,6 +63,19 @@ So the rule: **put things in the same folder if they're always read together, al
 
 ## Embed or reference — the central decision
 
+```mermaid
+flowchart LR
+    subgraph EMB ["EMBED — one-to-few"]
+        U1["user document"] --- A1["addresses array<br/>preferences object"]
+        N1["✅ one read · atomic update<br/>❌ duplicated if shared"]
+    end
+    subgraph REF ["REFERENCE — one-to-many"]
+        U2["user document"] -.customer_id.-> O["orders collection<br/>50,000 documents"]
+        N2["✅ bounded documents<br/>❌ two reads · no atomicity"]
+    end
+```
+
+
 ```json
 // EMBED — one read, atomic updates
 { "_id": "order_88", "customer_name": "Ann",

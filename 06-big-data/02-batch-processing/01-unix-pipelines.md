@@ -25,6 +25,16 @@ Why does this matter for "big data"? Because **it's the same idea, just bigger**
 
 ## The canonical example
 
+```mermaid
+flowchart LR
+    F[("access.log")] --> A["awk: print field 7<br/>MAP: extract the key"]
+    A --> S["sort<br/>SHUFFLE: group by key"]
+    S --> U["uniq -c<br/>REDUCE: aggregate"]
+    U --> S2["sort -rn then head -5<br/>a SECOND job: global top-N"]
+    S2 --> O["top 5 URLs"]
+```
+
+
 ```bash
 cat access.log |
   awk '{print $7}' |          # extract the URL field

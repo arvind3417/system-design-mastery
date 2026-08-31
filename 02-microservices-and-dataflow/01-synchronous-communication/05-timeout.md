@@ -24,6 +24,18 @@ So: **long enough that a healthy neighbour always makes it, short enough that a 
 
 ## Why timeouts are non-negotiable
 
+```mermaid
+flowchart TD
+    C["Client<br/>budget 3,000 ms"] --> G["Gateway<br/>timeout 2,800 ms"]
+    G --> A["Service A<br/>timeout 2,000 ms"]
+    A --> B["Service B<br/>timeout 1,000 ms"]
+    B --> D["Database<br/>statement_timeout 500 ms"]
+    A -.->|"on timeout"| F["Fail fast to the fallback"]
+```
+
+**Timeouts must shrink down the chain.** If an inner layer's timeout exceeds its caller's remaining budget, the caller gives up first and the inner work is wasted — capacity spent producing an answer nobody will read.
+
+
 | Without a timeout | With a timeout |
 |---|---|
 | A hung dependency holds your thread forever | The thread is released after N ms |

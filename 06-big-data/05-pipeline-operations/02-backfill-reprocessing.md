@@ -102,6 +102,18 @@ done
 
 ### Strategy 2 — Shadow table and swap
 
+```mermaid
+flowchart LR
+    RAW[("raw events<br/>immutable, partitioned by day")] --> J["backfill job<br/>parameterised by execution date"]
+    J --> NEW[("fct_revenue__backfill<br/>SHADOW")]
+    OLD[("fct_revenue<br/>LIVE — still serving reads")] --> V{"verify: counts · totals ·<br/>EXPECTED DELTA"}
+    NEW --> V
+    V -->|"delta matches the prediction"| SWAP["atomic rename / repoint the view"]
+    V -->|"0% or 90% changed"| STOP["❌ stop — the fix is wrong"]
+    SWAP --> KEEP[("keep the old table<br/>for a rollback window")]
+```
+
+
 ```
 1. Build the corrected output into a NEW table (`fct_revenue__backfill`)
 2. Verify it against the current table for overlapping periods

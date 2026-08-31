@@ -63,6 +63,23 @@ Processed:        10:04:31   ← processing time
 
 ## Watermarks
 
+```mermaid
+flowchart TD
+    subgraph ARR ["Arrival order (processing time)"]
+        E1["10:03"] --> E2["10:01"] --> E3["10:04"] --> E4["10:02"] --> E5["10:06"]
+    end
+    subgraph WM ["Watermark = max_seen − 2 min"]
+        W1["10:01"] --> W2["10:01"] --> W3["10:02"] --> W4["10:02"] --> W5["10:04"]
+    end
+    W5 --> FIRE["watermark passes 10:05<br/>→ the 10:00-10:05 window FIRES"]
+    L["10:00 arrives LATE,<br/>after the fire"] --> D{"how late?"}
+    D -->|"within allowedLateness"| UPD["emit an UPDATED result"]
+    D -->|"beyond it"| SIDE["side output, or dropped"]
+```
+
+A watermark is a **promise, not a fact**: *"I believe I have everything up to T."* Longer delay means more complete and slower; shorter means faster and more wrong. There is no third option.
+
+
 > **A watermark of time T is an assertion: "I believe I have seen all events with event time ≤ T."**
 
 ```

@@ -49,6 +49,17 @@ And the mistake everyone makes: **splitting them badly.** If you split by *first
 
 ## Partitioning strategies
 
+```mermaid
+flowchart TD
+    K["key: user_id = 8842"] --> R{"strategy"}
+    R -->|RANGE| RA["shard 2 (1M-2M)<br/>⚠️ newest shard takes all writes"]
+    R -->|HASH| HA["hash % N → shard 3<br/>✅ even · ❌ no range queries"]
+    R -->|"CONSISTENT HASH"| CH["ring position → shard 3<br/>✅ only 1/N moves on resize"]
+    R -->|DIRECTORY| DI["lookup service → shard 7<br/>✅ any key, anywhere"]
+    R -->|GEOGRAPHIC| GE["EU shard<br/>latency + data residency"]
+```
+
+
 ### 1. Range partitioning
 
 ```

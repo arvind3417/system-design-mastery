@@ -23,6 +23,18 @@ Every one of these takes a couple of commands. The value is in seeing it happen.
 
 ## Setup — a 3-node cluster
 
+```mermaid
+flowchart TD
+    C["psql / pgbench"] --> P[("primary :5432<br/>wal_level=replica")]
+    P -->|"streaming WAL<br/>slot: replica1"| R1[("replica1 :5433<br/>hot_standby")]
+    P -->|"slot: replica2"| R2[("replica2 :5434")]
+    R1 -.->|"read-only<br/>lag measurable"| C
+    R2 -.-> C
+```
+
+Two replicas rather than one, so drill 5 can show the difference between `ANY 1` (quorum — survives a loss) and `ALL` (one replica down blocks every write).
+
+
 ```yaml
 # docker-compose.yml
 services:

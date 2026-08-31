@@ -22,6 +22,18 @@ That last one is the lesson. Reading "sticky sessions are risky" is forgettable.
 
 ## Setup
 
+```mermaid
+flowchart LR
+    H["curl / xargs -P<br/>the load generator"] --> LB["nginx :8080<br/>algorithm under test"]
+    LB --> A1["app1 → server-1"]
+    LB --> A2["app2 → server-2"]
+    LB --> A3["app3 → server-3<br/>(made SLOW in drill 2)"]
+    LB -.->|"X-Upstream header"| H
+```
+
+The `X-Upstream` response header is what makes every drill measurable — you can count exactly which backend served each request.
+
+
 ```yaml
 # docker-compose.yml
 services:

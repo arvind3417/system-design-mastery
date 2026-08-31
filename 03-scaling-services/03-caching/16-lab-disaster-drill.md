@@ -24,6 +24,18 @@ Once you've watched a database fall over because of a cache, you never design on
 
 ## Setup
 
+```mermaid
+flowchart TD
+    L["load(): 100 threads<br/>Zipf key distribution"] --> F["the cache function under test"]
+    F --> R[("Redis<br/>socket_timeout 50 ms")]
+    F -->|miss| O["Origin<br/>capacity = 50 concurrent<br/>REJECTS beyond that"]
+    O -.->|"RuntimeError"| F
+    F -.->|counters| S["stats: hits · origin_queries ·<br/>origin_rejected · failed"]
+```
+
+The origin's **hard concurrency limit** is what makes these drills honest — a real database does not get slower forever, it starts refusing work.
+
+
 ```python
 # disaster.py
 import redis, time, threading, random, json

@@ -106,6 +106,19 @@ Time-series data compresses far better than general data, because of Gorilla-sty
 
 ## Retention and downsampling
 
+```mermaid
+flowchart LR
+    R["raw @ 1 s<br/>86,400 pts/day"] -->|"after 24 h"| M["1 min<br/>1,440/day"]
+    M -->|"after 7 d"| F["5 min<br/>288/day"]
+    F -->|"after 90 d"| H["1 hour<br/>24/day"]
+    H -->|"after 2 y"| X["deleted"]
+    R -.->|"keep avg + MIN + MAX + count + sum"| M
+    M -.->|"percentiles need a mergeable SKETCH,<br/>never a percentile value"| F
+```
+
+🔢 Two years across these tiers is **~140,000 points instead of 63 million** — a 450× reduction, with full resolution kept exactly where debugging needs it.
+
+
 **The core pattern:** keep full resolution briefly, then progressively coarser.
 
 | Age | Resolution | Retention | Relative size |
